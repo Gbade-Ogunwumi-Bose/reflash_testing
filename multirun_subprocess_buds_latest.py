@@ -1,5 +1,6 @@
 import subprocess
 import time
+import os
 
 
 class MultiRunSubProcess(object):
@@ -23,7 +24,7 @@ class MultiRunSubProcess(object):
             output = ""
 
         if ret_code != 0:
-            return False, ""
+            return False, errors
         else:
             return True, str(output.decode("utf-8"))
 
@@ -31,16 +32,16 @@ class MultiRunSubProcess(object):
 if __name__ == '__main__':
 
     obj = MultiRunSubProcess()
-    fw_base_path = "C:\\Users\\sp49377\\Downloads\\Bud_build\\0.10.26+ga44dfd4\\encrypted_dev\\QCC517X_dfu_file.bin"
-    fw_ping_path = "C:\\Users\\sp49377\\Downloads\\Bud_build\\0.11.2+g8942776\\encrypted_dev\\QCC517X_dfu_file.bin"
-    case_fw_base_path = "C:\\Users\\sp49377\\Downloads\\Case_builds\\0.10.16+g3adaa0c\\SmallsCase.bin.dfu"
-    case_fw_ping_path = "C:\\Users\\sp49377\\Downloads\\Case_builds\\0.10.17+g8435766\\SmallsCase.bin.dfu"
+    fw_ping_path = "C:\\Project\\Smalls\MBoards\\Encrypted\\0.11.6\\QCC517X_dfu_file.bin"
+    fw_base_path = "C:\\Project\\Smalls\MBoards\\Encrypted\\0.10.26\\QCC517X_dfu_file.bin"
+    case_fw_base_path = "C:\\Project\\Smalls\Case\\0.10.16\\SmallsCase.bin.dfu"
+    case_fw_ping_path = "C:\\Project\\Smalls\Case\\0.10.17\\SmallsCase.bin.dfu"
+    fw_ver_ping = "0.11.6"
     fw_ver_base = "0.10.26"
-    fw_ver_ping = "0.11.2"
-    case_serial = "M20920149048742590100C0"    # "M20920043018742590100C0"
-    right_bud_mac = "C8:7B:23:51:BD:5F"  # "C8:7B:23:51:C7:B4"
+    case_serial = "M20920110028742590100C0"  # "M20920043018742590100C0"
+    right_bud_mac = "C8:7B:23:51:BD:4A"  # "C8:7B:23:51:C7:B4"
     # "C8:7B:23:51:C5:B0"  # "78:2B:64:7C:3D:C2"  # "78:2B:64:7C:44:B1"
-    left_bud_mac = "C8:7B:23:51:C3:AE"    # "C8:7B:23:51:C4:80"
+    left_bud_mac = "C8:7B:23:51:C0:03"  # "C8:7B:23:51:C4:80"
     # "C8:7B:23:51:BF:9A"    # "78:2B:64:7C:3D:D5"  # "78:2B:64:7C:45:26"
     echo_1_r = "echo \"right version before update started\""
     echo_2_r = "echo \"right version after update finished\""
@@ -267,7 +268,7 @@ if __name__ == '__main__':
         _, _ = obj.execute_command("echo \"--------------------------------\"" + log_file)
         res, output = obj.execute_command(update_cmd + log_file)
         if not res:
-            return res, False
+            return res, False, output
 
         _, _ = obj.execute_command("echo \"--------------------------------\"" + log_file)
         # 5. get after version of both the buds
@@ -336,21 +337,43 @@ if __name__ == '__main__':
         return res, res_case
 
 
-    for x in range(50):
+    for x in range(2):
+        # os.chdir(r"C:\Github\reflash_testing\BoseManufacturingTool")
         print("running loop index is {}".format(x))
-        cmd1_logfile = " >> BMT_Test_logs\\{}_log_updating_to_{}.txt 2>&1".format(x, fw_ver_ping)
-        cmd2_logfile = " >> BMT_Test_logs\\{}_log_updating_to_{}.txt 2>&1".format(x, fw_ver_base)
+        cmd1_logfile = " >> BMT_Test_logs\\C2_16\\{}_log_updating_to_{}.txt 2>&1".format(x, fw_ver_ping)
+        cmd2_logfile = " >> BMT_Test_logs\\C2_16\\{}_log_updating_to_{}.txt 2>&1".format(x, fw_ver_base)
         print("#####################base_to_ping_update############################## loop index is {}".format(x))
-        # #####################base_to_ping_update##############################
-        res1, case_res1 = update_seq(cmd1_logfile, base_to_ping_update, case_base_to_ping_update)
-        # if not res1 or not case_res1:
-        #     break
-        time.sleep(10)
-        print("#####################ping_to_base_update############################## loop index is {}".format(x))
-        res2, case_res2 = update_seq(cmd2_logfile, ping_to_base_update, case_ping_to_base_update)
-        # if not res2 or not case_res2:
-        #     break
+
+        # base to ping update
+        for attempt in range(2):
+            try:
+                res1, case_res1, _ = update_seq(cmd1_logfile, base_to_ping_update, case_base_to_ping_update)
+                if not res1:
+                    # raise exception if update cmd fails
+                    raise ValueError(f"Update command failed from previous execution: {_}")
+            except ValueError:
+                # overwrite logfile name, so retry is in a separate file
+                cmd1_logfile = f" >> BMT_Test_logs\\C2_16\\{x}_log_updating_to_{fw_ver_ping}_retry_{attempt+1}.txt 2>&1"
+            else:
+                # break out of re-attempt loop if all goes well
+                break
+
+        # ping to base update
+        for attempt in range(2):
+            try:
+                res2, case_res2, _ = update_seq(cmd2_logfile, ping_to_base_update, case_ping_to_base_update)
+                if not res2:
+                    # raise exception if update cmd fails
+                    raise ValueError(f"Update command failed from previous execution: {_}")
+            except ValueError:
+                # overwrite logfile name, so retry is in a separate file
+                cmd2_logfile = f" >> BMT_Test_logs\\C2_16\\{x}_log_updating_to_{fw_ver_base}_retry_{attempt+1}.txt 2>&1"
+            else:
+                # break out of re-attempt loop if all goes well
+                break
+
         result_lst.append(tuple((res1, res2)))
         result_lst.append((res1, res2))
+
     print("=============Results are==================")
     print(result_lst)
