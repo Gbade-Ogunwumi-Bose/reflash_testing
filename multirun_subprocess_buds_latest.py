@@ -266,9 +266,7 @@ if __name__ == '__main__':
         # 4.5 disconnect left bud as BLE update needs ony 1 dut connection --ble_address argument is not working
         _, _ = obj.execute_command(disconnect_left_bud + log_file)
         _, _ = obj.execute_command("echo \"--------------------------------\"" + log_file)
-        # res, output = obj.execute_command(update_cmd + log_file)
-        res = False
-        output = "Got here"
+        res, output = obj.execute_command(update_cmd + log_file)
         if not res:
             return res, False, output
 
@@ -339,7 +337,8 @@ if __name__ == '__main__':
         return res, res_case
 
 
-    for x in range(1):
+    for x in range(2):
+        # os.chdir(r"C:\Github\reflash_testing\BoseManufacturingTool")
         print("running loop index is {}".format(x))
         cmd1_logfile = " >> BMT_Test_logs\\C2_16\\{}_log_updating_to_{}.txt 2>&1".format(x, fw_ver_ping)
         cmd2_logfile = " >> BMT_Test_logs\\C2_16\\{}_log_updating_to_{}.txt 2>&1".format(x, fw_ver_base)
