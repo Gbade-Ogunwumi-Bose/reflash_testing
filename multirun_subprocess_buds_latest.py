@@ -23,7 +23,7 @@ class MultiRunSubProcess(object):
             output = ""
 
         if ret_code != 0:
-            return False, ""
+            return False, errors
         else:
             return True, str(output.decode("utf-8"))
 
@@ -267,7 +267,7 @@ if __name__ == '__main__':
         _, _ = obj.execute_command("echo \"--------------------------------\"" + log_file)
         res, output = obj.execute_command(update_cmd + log_file)
         if not res:
-            return res, False
+            return res, False, output
 
         _, _ = obj.execute_command("echo \"--------------------------------\"" + log_file)
         # 5. get after version of both the buds
@@ -341,16 +341,20 @@ if __name__ == '__main__':
         cmd1_logfile = " >> BMT_Test_logs\\{}_log_updating_to_{}.txt 2>&1".format(x, fw_ver_ping)
         cmd2_logfile = " >> BMT_Test_logs\\{}_log_updating_to_{}.txt 2>&1".format(x, fw_ver_base)
         print("#####################base_to_ping_update############################## loop index is {}".format(x))
-        # #####################base_to_ping_update##############################
-        res1, case_res1 = update_seq(cmd1_logfile, base_to_ping_update, case_base_to_ping_update)
-        # if not res1 or not case_res1:
-        #     break
-        time.sleep(10)
-        print("#####################ping_to_base_update############################## loop index is {}".format(x))
-        res2, case_res2 = update_seq(cmd2_logfile, ping_to_base_update, case_ping_to_base_update)
-        # if not res2 or not case_res2:
-        #     break
-        result_lst.append(tuple((res1, res2)))
-        result_lst.append((res1, res2))
+
+        # base to ping update
+        try:
+            res1, case_res1, _ = update_seq(cmd1_logfile, base_to_ping_update, case_base_to_ping_update)
+            if not res1:
+                # raise exception if update cmd fails
+                raise ValueError(f"Update command failed from previous execution: {_}")
+        except ValueError:
+            # overwrite logfile name, so retry is in a separate file
+            cmd1_logfile = " >> BMT_Test_logs\\{}_log_updating_to_{}_retry.txt 2>&1".format(x, fw_ver_ping)
+        else:
+            # break out of re-attempt loop if all goes well
+            break
+
+
     print("=============Results are==================")
     print(result_lst)
