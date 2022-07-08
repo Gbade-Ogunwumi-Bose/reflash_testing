@@ -268,7 +268,7 @@ if __name__ == '__main__':
         _, _ = obj.execute_command("echo \"--------------------------------\"" + log_file)
         res, output = obj.execute_command(update_cmd + log_file)
         if not res:
-            return res, False, output
+            return res, False
 
         _, _ = obj.execute_command("echo \"--------------------------------\"" + log_file)
         # 5. get after version of both the buds
@@ -347,7 +347,7 @@ if __name__ == '__main__':
         # base to ping update
         for attempt in range(2):
             try:
-                res1, case_res1, _ = update_seq(cmd1_logfile, base_to_ping_update, case_base_to_ping_update)
+                res1, case_res1 = update_seq(cmd1_logfile, base_to_ping_update, case_base_to_ping_update)
                 if not res1:
                     # raise exception if update cmd fails
                     raise ValueError(f"Update command failed from previous execution: {_}")
@@ -361,7 +361,7 @@ if __name__ == '__main__':
         # ping to base update
         for attempt in range(2):
             try:
-                res2, case_res2, _ = update_seq(cmd2_logfile, ping_to_base_update, case_ping_to_base_update)
+                res2, case_res2 = update_seq(cmd2_logfile, ping_to_base_update, case_ping_to_base_update)
                 if not res2:
                     # raise exception if update cmd fails
                     raise ValueError(f"Update command failed from previous execution: {_}")
