@@ -350,7 +350,7 @@ if __name__ == '__main__':
                 res1, case_res1 = update_seq(cmd1_logfile, base_to_ping_update, case_base_to_ping_update)
                 if not res1:
                     # raise exception if update cmd fails
-                    raise ValueError(f"Update command failed from previous execution: {_}")
+                    raise ValueError(f"Update command failed from previous execution")
             except ValueError:
                 # overwrite logfile name, so retry is in a separate file
                 cmd1_logfile = f" >> BMT_Test_logs\\C2_16\\{x}_log_updating_to_{fw_ver_ping}_retry_{attempt+1}.txt 2>&1"
@@ -364,7 +364,7 @@ if __name__ == '__main__':
                 res2, case_res2 = update_seq(cmd2_logfile, ping_to_base_update, case_ping_to_base_update)
                 if not res2:
                     # raise exception if update cmd fails
-                    raise ValueError(f"Update command failed from previous execution: {_}")
+                    raise ValueError(f"Update command failed from previous execution")
             except ValueError:
                 # overwrite logfile name, so retry is in a separate file
                 cmd2_logfile = f" >> BMT_Test_logs\\C2_16\\{x}_log_updating_to_{fw_ver_base}_retry_{attempt+1}.txt 2>&1"
